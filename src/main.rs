@@ -6,8 +6,15 @@ use std::sync::mpsc::{Sender, channel};
 use std::thread;
 
 #[derive(Deserialize, Debug)]
+#[serde(untagged)]
+enum Date {
+    Int(u32),
+    String(String),
+}
+
+#[derive(Deserialize, Debug)]
 struct Day {
-    date: u32,
+    date: Date,
     content: String,
     suggestion: String,
 }
@@ -27,8 +34,10 @@ fn main() -> Result<(), PlatformError> {
             match res {
                 Ok(day) => {
                     println!("{}", day);
-                    let res = get_data(day).unwrap();
-                    println!("{:?}", res);
+                    thread::spawn(move || {
+                        let res = get_data(day).unwrap();
+                        println!("{:?}", res);
+                    });
                 },
                 Err(err) => eprintln!("{:?}", err),
             }
