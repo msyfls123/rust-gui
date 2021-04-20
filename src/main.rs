@@ -1,5 +1,6 @@
 #![allow(irrefutable_let_patterns)]
 
+use std::time;
 use druid::widget::{Button, Flex, Label };
 use druid::{
     AppLauncher, LocalizedString, PlatformError,
@@ -80,6 +81,7 @@ fn request_day(rx: Receiver<u32>, event_sink: druid::ExtEventSink) {
                 Ok(day) => {
                     println!("{}", day);
                     let res = get_data(day).unwrap();
+                    thread::sleep(time::Duration::from_millis(1000));
                     let day_data = format!("{:?}", res);
                     event_sink
                         .submit_command(DAY_DATA, day_data, Target::Auto)
@@ -100,7 +102,9 @@ fn ui_builder() -> impl Widget<State> {
     let button = Button::new("increment")
         .on_click(|_ctx, data: &mut State, _env| {
             data.day += 1;
-            data.dispatch.send(data.day);
+            if data.dispatch.send(data.day).is_err() {
+                eprintln!("dispatch err");
+            };
         })
         .padding(5.0);
 
