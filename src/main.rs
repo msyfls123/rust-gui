@@ -6,6 +6,7 @@ use druid::{
     AppLauncher, LocalizedString, PlatformError,
     Widget, WidgetExt, WindowDesc, Data, Lens, Target,
     Selector, AppDelegate, DelegateCtx, Handled, Command, Env,
+    MenuDesc, MenuItem,
 };
 // use std::sync::mpsc::{Sender, channel, Receiver};
 use std::thread;
@@ -19,8 +20,9 @@ mod utils;
 use utils::api::get_data;
 
 const DAY_DATA: Selector<String> = Selector::new("day_data");
+const MENU_COUNT_ACTION: Selector<usize> = Selector::new("menu-count-action");
 
-#[derive(Clone, Data, Lens)]
+#[derive(Debug, Clone, Data, Lens)]
 struct State {
     day: u32,
     #[data(ignore)]
@@ -53,6 +55,19 @@ async fn main() -> Result<(), PlatformError> {
     let (tx, rx) = unbounded_channel();
     let arc_rx = Arc::new(Mutex::new(rx));
     let main_window = WindowDesc::new(ui_builder);
+    let submenu = MenuDesc::new(LocalizedString::new("hello2")).append_iter(|| (0..4).map(|i| {
+        MenuItem::new(
+            LocalizedString::new("hello-counter").with_arg("count", move |_, _| i.into()),
+            Command::new(MENU_COUNT_ACTION, i, Target::Auto),
+        )
+    }));
+    let menu = MenuDesc::new(LocalizedString::new("hello"))
+        .append(submenu.clone())
+        .append(submenu.clone());
+    let new_menu = MenuDesc::<State>::new(LocalizedString::new("Blocking functions"));
+    // let default = druid::platform_menus::mac::menu_bar();
+    // println!("{:?}", default.items[0]);
+    let main_window = main_window.menu(menu);
     let data = 0_u32;
     let launcher = AppLauncher::with_window(main_window);
     let event_sink = launcher.get_external_handle();
@@ -109,5 +124,9 @@ fn ui_builder() -> impl Widget<State> {
         })
         .padding(5.0);
 
-    Flex::column().with_child(label).with_child(button).with_child(label2)
+    Flex::column()
+        .with_child(label)
+        .with_child(button)
+        .with_default_spacer()
+        .with_child(label2)
 }
