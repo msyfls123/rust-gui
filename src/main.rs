@@ -7,27 +7,16 @@ use druid::{
     Widget, WidgetExt, WindowDesc, Data, Lens, Target,
     Selector, AppDelegate, DelegateCtx, Handled, Command, Env,
 };
-use reqwest::Error;
-use serde::{Deserialize};
 // use std::sync::mpsc::{Sender, channel, Receiver};
 use std::thread;
 use tokio::sync::mpsc::{UnboundedSender, unbounded_channel, UnboundedReceiver};
 use tokio::sync::{Mutex};
 use std::sync::{Arc};
 
-#[derive(Deserialize, Debug, Clone)]
-#[serde(untagged)]
-enum Date {
-    Int(u32),
-    String(String),
-}
+mod types;
+mod utils;
 
-#[derive(Deserialize, Debug, Clone)]
-struct Day {
-    date: Date,
-    content: String,
-    suggestion: String,
-}
+use utils::api::get_data;
 
 const DAY_DATA: Selector<String> = Selector::new("day_data");
 
@@ -121,11 +110,4 @@ fn ui_builder() -> impl Widget<State> {
         .padding(5.0);
 
     Flex::column().with_child(label).with_child(button).with_child(label2)
-}
-
-async fn get_data(day: u32) -> Result<Day, Error> {
-    let url = format!("https://day.ebichu.cc/api/{}", day);
-    let response = reqwest::get(&url).await?;
-    let day: Day = response.json().await?;
-    Ok(day)
 }
