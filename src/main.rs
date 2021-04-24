@@ -1,11 +1,11 @@
 #![allow(irrefutable_let_patterns)]
 
-use druid::widget::{Button, Flex, Label, LineBreaking};
+use druid::widget::{Button, Flex, Label, LineBreaking, EnvScope};
 use druid::{
     AppLauncher, LocalizedString, PlatformError,
     Widget, WidgetExt, WindowDesc, Data, Lens, Target,
     AppDelegate, DelegateCtx, Handled, Command, Env,
-    MenuDesc, MenuItem, Color,
+    MenuDesc, MenuItem, Color, theme
 };
 // use std::sync::mpsc::{Sender, channel, Receiver};
 use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
@@ -30,6 +30,7 @@ struct State {
     #[data(ignore)]
     dispatch: UnboundedSender<u32>,
     day_data: String,
+    color_index: usize,
 }
 
 struct Delegate;
@@ -48,6 +49,9 @@ impl AppDelegate<State> for Delegate {
             Handled::Yes
         } else if let Some(&concurrency) = cmd.get(CONCURRENCY_COUNT) {
             data.concurrency = concurrency;
+            Handled::Yes
+        } else if let Some(&index) = cmd.get(MENU_COUNT_ACTION) {
+            data.color_index = index;
             Handled::Yes
         } else {
             Handled::No
@@ -79,12 +83,17 @@ async fn main() -> Result<(), PlatformError> {
     request_day(initial_concurrency, arc_rx, Arc::clone(&arc_event_sink));
 
     launcher.use_simple_logger()
+        .configure_env(|env, _| {
+            env.set(theme::WINDOW_BACKGROUND_COLOR, Color::WHITE);
+            env.set(theme::LABEL_COLOR, Color::AQUA);
+        })
         .delegate(Delegate {})
         .launch(State {
             day: 0_u32,
             concurrency: initial_concurrency,
             dispatch: tx.clone(),
             day_data: String::from(""),
+            color_index: 0,
         })
 }
 
@@ -96,7 +105,7 @@ fn ui_builder() -> impl Widget<State> {
     let label = Label::new(text).padding(5.0).center();
     let label2 = Label::new(|data: &State, _env: &_| format!("{}", data.day_data))
         .with_line_break_mode(LineBreaking::WordWrap)
-        .with_text_color(Color::rgb8(0x39, 0xff, 0xab))
+        .with_text_color(Color::rgb8(0x39, 0x9c, 0xab))
         .padding(5.0);
     let label3 = Label::new(|data: &State, _env: &_| format!("Concurrency: {}", data.concurrency)).padding(5.0);
     let button = Button::new("increment")
@@ -108,12 +117,18 @@ fn ui_builder() -> impl Widget<State> {
             };
         })
         .padding(5.0);
-
-    Flex::column()
-        .with_child(label)
-        .with_child(button)
-        .with_default_spacer()
-        .with_child(label2)
-        .with_default_spacer()
-        .with_child(label3)
+    EnvScope::new(
+        |env: &mut Env, data: &State| {
+            let options = [Color::TEAL, Color::AQUA, Color::NAVY, Color::MAROON];
+            let len = options.len();
+            env.set(theme::LABEL_COLOR, options[data.color_index % len].clone());
+        },
+        Flex::column()
+            .with_child(label)
+            .with_child(button)
+            .with_default_spacer()
+            .with_child(label2)
+            .with_default_spacer()
+            .with_child(label3)
+    )
 }
