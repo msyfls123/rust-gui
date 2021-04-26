@@ -61,18 +61,18 @@ struct WindowContextMenuController;
 impl <W: Widget<State>> Controller<State, W> for WindowContextMenuController {
     fn event(
         &mut self,
-        _child: &mut W,
+        child: &mut W,
         ctx: &mut druid::EventCtx<'_, '_>,
         event: &druid::Event,
-        _data: &mut State,
-        _env: &druid::Env
+        data: &mut State,
+        env: &druid::Env
     ) {
         match event {
             Event::MouseDown(ref mouse) if mouse.button.is_right() => {
                 let context_menu = ContextMenu::new(make_demo_menu(), mouse.pos);
                 ctx.show_context_menu(context_menu);
             },
-            _ => {}
+            _ => child.event(ctx, event, data, env),
         }
     }
 }
