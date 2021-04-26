@@ -1,37 +1,34 @@
 #![allow(irrefutable_let_patterns)]
 
-use druid::widget::{Button, Flex, Label, LineBreaking, EnvScope};
+use druid::widget::{
+    Button, Flex, Label, LineBreaking, EnvScope,
+    Controller, ControllerHost,
+};
 use druid::{
     AppLauncher, LocalizedString, PlatformError,
-    Widget, WidgetExt, WindowDesc, Data, Lens, Target,
+    Widget, WidgetExt, WindowDesc, Target,
     AppDelegate, DelegateCtx, Handled, Command, Env,
-    MenuDesc, MenuItem, Color, theme
+    MenuDesc, Color, theme, Event, ContextMenu,
 };
 // use std::sync::mpsc::{Sender, channel, Receiver};
-use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
+use tokio::sync::mpsc::{unbounded_channel};
 use tokio::sync::{Mutex};
 use std::sync::{Arc};
 
 mod types;
 mod utils;
 mod helpers;
+mod components;
 
+use types::State;
 use types::selector::{
     DAY_DATA,
     MENU_COUNT_ACTION,
     CONCURRENCY_COUNT,
 };
 use helpers::event_handler::request_day;
+use components::menu::{make_demo_menu};
 
-#[derive(Debug, Clone, Data, Lens)]
-struct State {
-    day: u32,
-    concurrency: u32,
-    #[data(ignore)]
-    dispatch: UnboundedSender<u32>,
-    day_data: String,
-    color_index: usize,
-}
 
 struct Delegate;
 
@@ -59,17 +56,33 @@ impl AppDelegate<State> for Delegate {
     }
 }
 
+struct WindowContextMenuController;
+
+impl <W: Widget<State>> Controller<State, W> for WindowContextMenuController {
+    fn event(
+        &mut self,
+        _child: &mut W,
+        ctx: &mut druid::EventCtx<'_, '_>,
+        event: &druid::Event,
+        _data: &mut State,
+        _env: &druid::Env
+    ) {
+        match event {
+            Event::MouseDown(ref mouse) if mouse.button.is_right() => {
+                let context_menu = ContextMenu::new(make_demo_menu(), mouse.pos);
+                ctx.show_context_menu(context_menu);
+            },
+            _ => {}
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), PlatformError> {
     let (tx, rx) = unbounded_channel();
 
     let main_window = WindowDesc::new(ui_builder);
-    let submenu = MenuDesc::new(LocalizedString::new("hello2")).append_iter(|| (0..4).map(|i| {
-        MenuItem::new(
-            LocalizedString::new("hello-counter").with_arg("count", move |_, _| i.into()),
-            Command::new(MENU_COUNT_ACTION, i, Target::Auto),
-        )
-    }));
+    let submenu = make_demo_menu();
     let menu = MenuDesc::new(LocalizedString::new("hello"))
         .append(submenu.clone())
         .append(submenu.clone());
@@ -117,7 +130,7 @@ fn ui_builder() -> impl Widget<State> {
             };
         })
         .padding(5.0);
-    EnvScope::new(
+    let env_scoped_flex = EnvScope::new(
         |env: &mut Env, data: &State| {
             let options = [Color::TEAL, Color::AQUA, Color::NAVY, Color::MAROON];
             let len = options.len();
@@ -130,5 +143,6 @@ fn ui_builder() -> impl Widget<State> {
             .with_child(label2)
             .with_default_spacer()
             .with_child(label3)
-    )
+    );
+    ControllerHost::new(env_scoped_flex, WindowContextMenuController)
 }
