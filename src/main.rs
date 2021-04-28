@@ -83,7 +83,7 @@ async fn main() -> Result<(), PlatformError> {
 
     let main_window = WindowDesc::new(ui_builder);
     let submenu = make_demo_menu();
-    let menu = MenuDesc::new(LocalizedString::new("hello"))
+    let menu = MenuDesc::new(LocalizedString::new("start"))
         .append(submenu.clone())
         .append(submenu.clone());
     let main_window = main_window.menu(menu);
@@ -120,8 +120,10 @@ fn ui_builder() -> impl Widget<State> {
         .with_line_break_mode(LineBreaking::WordWrap)
         .with_text_color(Color::rgb8(0x39, 0x9c, 0xab))
         .padding(5.0);
-    let label3 = Label::new(|data: &State, _env: &_| format!("Concurrency: {}", data.concurrency)).padding(5.0);
-    let button = Button::new("increment")
+    let text2 = LocalizedString::new("concurrency").with_arg("count", |data: &State, _env| data.concurrency.into());
+    let label3 = Label::new(text2).padding(5.0);
+    let button_text = LocalizedString::<State>::new("increment");
+    let button = Button::new(button_text)
         .on_click(|_ctx, data: &mut State, _env| {
             data.day += 1;
             eprintln!("emmm {}", data.day);
