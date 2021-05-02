@@ -10,6 +10,7 @@ use druid::{
     AppDelegate, DelegateCtx, Handled, Command, Env,
     MenuDesc, Color, theme, Event, ContextMenu,
 };
+use druid::im::{vector};
 // use std::sync::mpsc::{Sender, channel, Receiver};
 use tokio::sync::mpsc::{unbounded_channel};
 use tokio::sync::{Mutex};
@@ -27,6 +28,7 @@ use types::selector::{
     CONCURRENCY_COUNT,
 };
 use helpers::event_handler::request_day;
+use components::day_list::make_day_list;
 use components::menu::{make_demo_menu};
 
 
@@ -43,6 +45,7 @@ impl AppDelegate<State> for Delegate {
     ) -> Handled {
         if let Some(day) = cmd.get(DAY_DATA) {
             data.day_data = day.to_string();
+            data.days.push_back(day.to_string());
             Handled::Yes
         } else if let Some(&concurrency) = cmd.get(CONCURRENCY_COUNT) {
             data.concurrency = concurrency;
@@ -99,6 +102,8 @@ async fn main() -> Result<(), PlatformError> {
         .configure_env(|env, _| {
             env.set(theme::WINDOW_BACKGROUND_COLOR, Color::WHITE);
             env.set(theme::LABEL_COLOR, Color::AQUA);
+            env.set(theme::BUTTON_LIGHT, Color::WHITE);
+            env.set(theme::BUTTON_DARK, Color::WHITE);
         })
         .delegate(Delegate {})
         .launch(State {
@@ -106,6 +111,7 @@ async fn main() -> Result<(), PlatformError> {
             concurrency: initial_concurrency,
             dispatch: tx.clone(),
             day_data: String::from(""),
+            days: vector![],
             color_index: 0,
         })
 }
@@ -145,6 +151,7 @@ fn ui_builder() -> impl Widget<State> {
             .with_child(label2)
             .with_default_spacer()
             .with_child(label3)
+            .with_flex_child(make_day_list(), 1.0)
     );
     ControllerHost::new(env_scoped_flex, WindowContextMenuController)
 }

@@ -2,6 +2,7 @@ use druid::{
   Data,
   Lens,
 };
+use druid::im::{Vector};
 
 use tokio::sync::mpsc::{UnboundedSender};
 
@@ -15,5 +16,6 @@ pub struct State {
     #[data(ignore)]
     pub dispatch: UnboundedSender<u32>,
     pub day_data: String,
+    pub days: Vector<String>,
     pub color_index: usize,
 }
