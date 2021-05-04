@@ -2,13 +2,12 @@
 
 use druid::widget::{
     Button, Flex, Label, LineBreaking, EnvScope,
-    Controller, ControllerHost,
+    ControllerHost,
 };
 use druid::{
     AppLauncher, LocalizedString, PlatformError,
-    Widget, WidgetExt, WindowDesc, Target,
-    AppDelegate, DelegateCtx, Handled, Command, Env,
-    MenuDesc, Color, theme, Event, ContextMenu,
+    Widget, WidgetExt, WindowDesc, Env,
+    MenuDesc, Color, theme,
 };
 use druid::im::{vector};
 // use std::sync::mpsc::{Sender, channel, Receiver};
@@ -22,63 +21,11 @@ mod helpers;
 mod components;
 
 use types::State;
-use types::selector::{
-    DAY_DATA,
-    MENU_COUNT_ACTION,
-    CONCURRENCY_COUNT,
-};
 use helpers::event_handler::request_day;
+use helpers::window_controller::WindowController;
+use helpers::app_delegate::AppDelegater;
 use components::day_list::make_day_list;
 use components::menu::{make_demo_menu};
-
-
-struct Delegate;
-
-impl AppDelegate<State> for Delegate {
-    fn command(
-        &mut self,
-        _ctx: &mut DelegateCtx,
-        _target: Target,
-        cmd: &Command,
-        data: &mut State,
-        _env: &Env,
-    ) -> Handled {
-        if let Some(day) = cmd.get(DAY_DATA) {
-            data.day_data = day.to_string();
-            data.days.push_back(day.to_string());
-            Handled::Yes
-        } else if let Some(&concurrency) = cmd.get(CONCURRENCY_COUNT) {
-            data.concurrency = concurrency;
-            Handled::Yes
-        } else if let Some(&index) = cmd.get(MENU_COUNT_ACTION) {
-            data.color_index = index;
-            Handled::Yes
-        } else {
-            Handled::No
-        }
-    }
-}
-
-struct WindowContextMenuController;
-
-impl <W: Widget<State>> Controller<State, W> for WindowContextMenuController {
-    fn event(
-        &mut self,
-        child: &mut W,
-        ctx: &mut druid::EventCtx<'_, '_>,
-        event: &druid::Event,
-        data: &mut State,
-        env: &druid::Env
-    ) {
-        match event {
-            Event::MouseDown(ref mouse) if mouse.button.is_right() => {
-                let context_menu = ContextMenu::new(make_demo_menu(), mouse.pos);
-                ctx.show_context_menu(context_menu);
-            },
-            _ => child.event(ctx, event, data, env),
-        }
-    }
-}
 
 #[tokio::main]
 async fn main() -> Result<(), PlatformError> {
@@ -105,7 +52,7 @@ async fn main() -> Result<(), PlatformError> {
             env.set(theme::BUTTON_LIGHT, Color::WHITE);
             env.set(theme::BUTTON_DARK, Color::WHITE);
         })
-        .delegate(Delegate {})
+        .delegate(AppDelegater {})
         .launch(State {
             day: 0_u32,
             concurrency: initial_concurrency,
@@ -153,5 +100,5 @@ fn ui_builder() -> impl Widget<State> {
             .with_child(label3)
             .with_flex_child(make_day_list(), 1.0)
     );
-    ControllerHost::new(env_scoped_flex, WindowContextMenuController)
+    ControllerHost::new(env_scoped_flex, WindowController)
 }
