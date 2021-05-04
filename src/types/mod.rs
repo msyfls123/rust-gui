@@ -3,6 +3,7 @@ use druid::{
   Lens,
 };
 use druid::im::{Vector};
+use druid::text::{RichText};
 
 use tokio::sync::mpsc::{UnboundedSender};
 
@@ -18,4 +19,5 @@ pub struct State {
     pub day_data: String,
     pub days: Vector<String>,
     pub color_index: usize,
+    pub rich_data: RichText,
 }

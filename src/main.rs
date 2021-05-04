@@ -2,7 +2,7 @@
 
 use druid::widget::{
     Button, Flex, Label, LineBreaking, EnvScope,
-    ControllerHost,
+    ControllerHost, RawLabel, CrossAxisAlignment,
 };
 use druid::{
     AppLauncher, LocalizedString, PlatformError,
@@ -10,6 +10,7 @@ use druid::{
     MenuDesc, Color, theme,
 };
 use druid::im::{vector};
+
 // use std::sync::mpsc::{Sender, channel, Receiver};
 use tokio::sync::mpsc::{unbounded_channel};
 use tokio::sync::{Mutex};
@@ -24,6 +25,7 @@ use types::State;
 use helpers::event_handler::request_day;
 use helpers::window_controller::WindowController;
 use helpers::app_delegate::AppDelegater;
+use helpers::{rich_text};
 use components::day_list::make_day_list;
 use components::menu::{make_demo_menu};
 
@@ -60,6 +62,7 @@ async fn main() -> Result<(), PlatformError> {
             day_data: String::from(""),
             days: vector![],
             color_index: 0,
+            rich_data: rich_text::get_initial_rich_text_data(),
         })
 }
 
@@ -68,7 +71,7 @@ fn ui_builder() -> impl Widget<State> {
     // The label text will be computed dynamically based on the current locale and count
     let text =
         LocalizedString::new("hello-counter").with_arg("count", |data: &State, _env| data.day.into());
-    let label = Label::new(text).padding(5.0).center();
+    let label = Label::new(text).padding(5.0);
     let label2 = Label::new(|data: &State, _env: &_| format!("{}", data.day_data))
         .with_line_break_mode(LineBreaking::WordWrap)
         .with_text_color(Color::rgb8(0x39, 0x9c, 0xab))
@@ -85,6 +88,8 @@ fn ui_builder() -> impl Widget<State> {
             };
         })
         .padding(5.0);
+
+    let rich_label = RawLabel::new().lens(State::rich_data);
     let env_scoped_flex = EnvScope::new(
         |env: &mut Env, data: &State| {
             let options = [Color::TEAL, Color::AQUA, Color::NAVY, Color::MAROON];
@@ -92,12 +97,14 @@ fn ui_builder() -> impl Widget<State> {
             env.set(theme::LABEL_COLOR, options[data.color_index % len].clone());
         },
         Flex::column()
+            .cross_axis_alignment(CrossAxisAlignment::Start)
             .with_child(label)
             .with_child(button)
             .with_default_spacer()
             .with_child(label2)
             .with_default_spacer()
             .with_child(label3)
+            .with_child(rich_label)
             .with_flex_child(make_day_list(), 1.0)
     );
     ControllerHost::new(env_scoped_flex, WindowController)
