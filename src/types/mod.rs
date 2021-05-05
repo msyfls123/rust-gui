@@ -9,6 +9,7 @@ use tokio::sync::mpsc::{UnboundedSender};
 
 pub mod day;
 pub mod selector;
+pub mod rich_editor;
 
 #[derive(Debug, Clone, Data, Lens)]
 pub struct State {
@@ -19,5 +20,6 @@ pub struct State {
     pub day_data: String,
     pub days: Vector<String>,
     pub color_index: usize,
-    pub rich_data: RichText,
+    pub rich_raw: String,
+    pub rich_text: RichText,
 }

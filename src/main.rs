@@ -3,6 +3,7 @@
 use druid::widget::{
     Button, Flex, Label, LineBreaking, EnvScope,
     ControllerHost, RawLabel, CrossAxisAlignment,
+    TextBox,
 };
 use druid::{
     AppLauncher, LocalizedString, PlatformError,
@@ -21,11 +22,11 @@ mod utils;
 mod helpers;
 mod components;
 
-use types::State;
+use types::{State, rich_editor};
 use helpers::event_handler::request_day;
 use helpers::window_controller::WindowController;
 use helpers::app_delegate::AppDelegater;
-use helpers::{rich_text};
+use helpers::{rich_editor as rich_editor_helpers};
 use components::day_list::make_day_list;
 use components::menu::{make_demo_menu};
 
@@ -53,6 +54,8 @@ async fn main() -> Result<(), PlatformError> {
             env.set(theme::LABEL_COLOR, Color::AQUA);
             env.set(theme::BUTTON_LIGHT, Color::WHITE);
             env.set(theme::BUTTON_DARK, Color::WHITE);
+            env.set(theme::BACKGROUND_DARK, Color::GRAY);
+            env.set(theme::BACKGROUND_LIGHT, Color::WHITE);
         })
         .delegate(AppDelegater {})
         .launch(State {
@@ -62,7 +65,8 @@ async fn main() -> Result<(), PlatformError> {
             day_data: String::from(""),
             days: vector![],
             color_index: 0,
-            rich_data: rich_text::get_initial_rich_text_data(),
+            rich_raw: rich_editor::INITIAL_RICH_TEXT.to_owned(),
+            rich_text: rich_editor_helpers::generate_rich_data(rich_editor::INITIAL_RICH_TEXT),
         })
 }
 
@@ -89,7 +93,12 @@ fn ui_builder() -> impl Widget<State> {
         })
         .padding(5.0);
 
-    let rich_label = RawLabel::new().lens(State::rich_data);
+    let editor = TextBox::multiline()
+        .lens(State::rich_raw)
+        .controller(rich_editor_helpers::RichEditorController)
+        .expand_width()
+        .padding(5.0);
+    let rich_label = RawLabel::new().lens(State::rich_text).padding(5.0);
     let env_scoped_flex = EnvScope::new(
         |env: &mut Env, data: &State| {
             let options = [Color::TEAL, Color::AQUA, Color::NAVY, Color::MAROON];
@@ -105,6 +114,8 @@ fn ui_builder() -> impl Widget<State> {
             .with_default_spacer()
             .with_child(label3)
             .with_child(rich_label)
+            .with_default_spacer()
+            .with_child(editor)
             .with_flex_child(make_day_list(), 1.0)
     );
     ControllerHost::new(env_scoped_flex, WindowController)
