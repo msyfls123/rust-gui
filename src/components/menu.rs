@@ -1,5 +1,6 @@
 use druid::{
   MenuDesc, MenuItem, LocalizedString, Command, Target,
+  SysMods,
 };
 
 use crate::types::{day, selector, State};
@@ -10,7 +11,7 @@ pub fn make_demo_menu() -> MenuDesc<State> {
         MenuItem::new(
             LocalizedString::new("demo-menu-item").with_arg("count", move |_, _| i.into()),
             Command::new(MENU_COUNT_ACTION, i, Target::Auto),
-        )
+        ).hotkey(SysMods::Cmd, &*i.to_string())
     }));
     submenu
 }
