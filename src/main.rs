@@ -28,7 +28,7 @@ use helpers::window_controller::WindowController;
 use helpers::app_delegate::AppDelegater;
 use helpers::{rich_editor as rich_editor_helpers};
 use components::day_list::make_day_list;
-use components::menu::{make_demo_menu};
+use components::menu::{make_demo_menu, make_window_menu};
 
 #[tokio::main]
 async fn main() -> Result<(), PlatformError> {
@@ -38,7 +38,7 @@ async fn main() -> Result<(), PlatformError> {
     let submenu = make_demo_menu();
     let menu = MenuDesc::new(LocalizedString::new("start"))
         .append(submenu.clone())
-        .append(submenu.clone());
+        .append(make_window_menu());
     let main_window = main_window.menu(menu);
     let launcher = AppLauncher::with_window(main_window);
 

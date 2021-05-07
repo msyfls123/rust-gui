@@ -6,6 +6,8 @@ concurrency = 并发：{ $count }
 start = 开始
 demo-menu = 点我
 demo-menu-item = 第 { $count } 项
+window-menu = 窗口
+dummy-window = 无聊的窗口
 
 # The 'application' menu on macOS
 macos-menu-about-app = About { -app-name }
