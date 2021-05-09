@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 tokio = { version = "1.5.0", features = ["full"] }
-druid = { version = "0.7.0", features = ["im"] }
+druid = { version = "0.7.0", features = ["im", "image"] }
 reqwest = { version = "0.11.3", features = ["json", "blocking"] }
 serde = { version = "1.0.125", features = ["derive"] }
+image = { version = "0.23.10" }

@@ -29,6 +29,7 @@ use helpers::app_delegate::AppDelegater;
 use helpers::{rich_editor as rich_editor_helpers};
 use components::day_list::make_day_list;
 use components::menu::{make_demo_menu, make_window_menu};
+use components::girl::make_girl;
 
 #[tokio::main]
 async fn main() -> Result<(), PlatformError> {
@@ -113,6 +114,7 @@ fn ui_builder() -> impl Widget<State> {
             .with_child(label2)
             .with_default_spacer()
             .with_child(label3)
+            .with_child(make_girl())
             .with_child(rich_label)
             .with_default_spacer()
             .with_child(editor)
