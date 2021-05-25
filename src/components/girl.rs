@@ -14,7 +14,7 @@ pub fn make_girl() -> impl Widget<State> {
     ImageFormat::Rgb,
     sizeofimage.0 as usize,
     sizeofimage.1 as usize,
-);
+  );
   SizedBox::new(Image::new(girl_data))
     .fix_width(sizeofimage.0 as f64 / 8.0)
     .fix_height(sizeofimage.1 as f64 / 8.0)
