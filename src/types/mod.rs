@@ -22,4 +22,5 @@ pub struct State {
     pub color_index: usize,
     pub rich_raw: String,
     pub rich_text: RichText,
+    pub recent_open_win_time: u128,
 }

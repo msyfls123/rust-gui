@@ -35,12 +35,11 @@ use components::girl::make_girl;
 async fn main() -> Result<(), PlatformError> {
     let (tx, rx) = unbounded_channel();
 
-    let main_window = WindowDesc::new(ui_builder);
     let submenu = make_demo_menu();
     let menu = MenuDesc::new(LocalizedString::new("start"))
         .append(submenu.clone())
         .append(make_window_menu());
-    let main_window = main_window.menu(menu);
+    let main_window = WindowDesc::new(ui_builder).menu(menu);
     let launcher = AppLauncher::with_window(main_window);
 
     let arc_rx = Arc::new(Mutex::new(rx));
@@ -68,6 +67,7 @@ async fn main() -> Result<(), PlatformError> {
             color_index: 0,
             rich_raw: rich_editor::INITIAL_RICH_TEXT.to_owned(),
             rich_text: rich_editor_helpers::generate_rich_data(rich_editor::INITIAL_RICH_TEXT),
+            recent_open_win_time: 0,
         })
 }
 

@@ -11,6 +11,7 @@ use crate::types::selector::{
     DUMMY_WINDOW,
 };
 use crate::components::dummy_window;
+use crate::helpers::timing_controller::{get_timestamp};
 
 pub struct AppDelegater;
 
@@ -34,6 +35,7 @@ impl AppDelegate<State> for AppDelegater {
             data.color_index = index;
             Handled::Yes
         } else if let Some(_) = cmd.get(DUMMY_WINDOW) {
+            data.recent_open_win_time = get_timestamp();
             ctx.new_window(WindowDesc::new(dummy_window::dummy_window_builder)
                 .window_size((400.0, 300.0)));
             Handled::Yes

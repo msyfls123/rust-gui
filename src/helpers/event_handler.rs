@@ -35,7 +35,7 @@ pub fn request_day(
   rx: Arc<Mutex<UnboundedReceiver<u32>>>,
   event_sink: Arc<druid::ExtEventSink>,
 ) {
-    println!("init request day event handler");
+    // println!("init request day event handler");
     let cloned = rx.clone();
     let concurrency = Arc::new(Mutex::new(initial_concurrency));
     tokio::spawn(async move {
