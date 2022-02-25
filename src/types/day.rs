@@ -9,7 +9,6 @@ enum Date {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Day {
-    date: Date,
-    content: String,
-    suggestion: String,
+    day: Date,
+    weekday: u64,
 }
