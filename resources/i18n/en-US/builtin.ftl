@@ -1,13 +1,13 @@
 app-name = Kimi
 
-hello-counter = 现在的值是 { $count }
-increment = 增加
-concurrency = 并发：{ $count }
-start = 开始
-demo-menu = 点我
-demo-menu-item = 第 { $count } 项
-window-menu = 窗口
-dummy-window = 无聊的窗口
+hello-counter = Current Value { $count }
+increment = Add
+concurrency = Concurrency: { $count }
+start = Start
+demo-menu = Click me
+demo-menu-item = No.{ $count } Item
+window-menu = Window
+dummy-window = Dummy Window
 
 # The 'application' menu on macOS
 macos-menu-about-app = About { -app-name }
